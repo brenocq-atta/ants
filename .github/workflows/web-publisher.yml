@@ -1,0 +1,53 @@
+name: Web publisher
+on:
+  push:
+    branches:
+      - main
+jobs:
+  web-publisher:
+    name: Web publisher - ${{matrix.config.project-file}}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+          bucket-path: 'atta-repos/ants/',
+          project-file: '/ants.atta'
+        }
+        
+    steps:
+        # Clone project 
+      - uses: actions/checkout@v3
+        # Clone atta
+      - uses: actions/checkout@v3
+        with:
+          repository: brenocq/atta
+          ref: master
+          path: atta
+        # Setup emscripten
+      - uses: mymindstorm/setup-emsdk@v9
+
+        # Install dependencies
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install cmake
+          cmake --version
+          gcc --version
+
+        # Google Storage setup 
+      - id: 'auth'
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: '${{secrets.GCP_CREDENTIALS}}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+
+        # Project web build
+      - name: Build and update basic.atta
+        working-directory: atta
+        run: |
+          ./scripts/build.sh --type web_module --static /home/runner/work/ants/ants${{matrix.config.project-file}}
+          gsutil cp build/web_module-release-static/bin/* gs://${{matrix.config.bucket-path}}
