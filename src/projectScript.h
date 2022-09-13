@@ -22,7 +22,11 @@ class Project : public atta::script::ProjectScript {
     void onUIRender() override;
 
   private:
+    void resetWorld();
+
     atta::resource::Image* _bgImage;
+    float _lastEvaporate;
+    float _lastBlur;
 };
 
 ATTA_REGISTER_PROJECT_SCRIPT(Project)

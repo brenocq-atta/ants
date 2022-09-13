@@ -23,56 +23,35 @@ void Project::onLoad() {
     info.format = rsc::Image::Format::RGBA8;
     _bgImage = rsc::create<rsc::Image>("background", info);
 
-    uint8_t* data = _bgImage->getData();
-    for (int i = 0; i < info.width * info.height * 4; i += 4) {
-        data[i] = data[i + 1] = data[i + 2] = 0;
-        data[i + 3] = 255;
-    }
-    _bgImage->update();
+    resetWorld();
 }
 
 void Project::onStart() {
     srand(42); // Repeatable simulations
 
     // Init ants
-    int i = 10;
     for (cmp::Entity ant : cmp::getFactory(antPrototype)->getClones()) {
         AntComponent* a = ant.get<AntComponent>();
         a->position = atta::vec2(rand() / float(RAND_MAX) * 100, rand() / float(RAND_MAX) * 100);
         a->angle = rand() / float(RAND_MAX) * M_PI * 2;
-        i++;
     }
 }
 
 void Project::onStop() {
-    uint32_t w = WorldComponent::width;
-    uint32_t h = WorldComponent::height;
-
-    // Clear pheromones
-    for (auto& f : world.get<WorldComponent>()->pheromones)
-        for (int i = 0; i < w * h; i++)
-            f[i] = 0;
-
-    // Clear texture
-    uint8_t* data = _bgImage->getData();
-    for (int i = 0; i < w * h * 4; i += 4) {
-        data[i] = data[i + 1] = data[i + 2] = 0;
-        data[i + 3] = 255;
-    }
-    _bgImage->update();
+    resetWorld();
 }
 
 void Project::onUpdateBefore(float dt) {
-    static float lastEvaporate = 0;
-    static float lastBlur = 0;
     uint32_t w = WorldComponent::width;
     uint32_t h = WorldComponent::height;
     auto& pheromones = world.get<WorldComponent>()->pheromones;
 
+    _lastBlur += dt;
+    _lastEvaporate += dt;
+
     // Blur
-    lastBlur += dt;
-    if (lastBlur >= world.get<WorldComponent>()->blur) {
-        lastBlur = 0;
+    if (_lastBlur >= world.get<WorldComponent>()->blur) {
+        _lastBlur = 0;
         for (int f = 0; f < WorldComponent::numPheromones; f++)
             for (int x = 0; x < w; x++) {
                 for (int y = 0; y < h; y++) {
@@ -90,9 +69,8 @@ void Project::onUpdateBefore(float dt) {
     }
 
     // Evaporate
-    lastEvaporate += dt;
-    if (lastEvaporate >= world.get<WorldComponent>()->evaporate) {
-        lastEvaporate = 0;
+    if (_lastEvaporate >= world.get<WorldComponent>()->evaporate) {
+        _lastEvaporate = 0;
         for (int f = 0; f < WorldComponent::numPheromones; f++)
             for (int i = 0; i < w * h; i++)
                 pheromones[f][i] = std::max(int(pheromones[f][i]) - 1, 0);
@@ -117,3 +95,21 @@ void Project::onUpdateBefore(float dt) {
 }
 
 void Project::onUIRender() {}
+
+void Project::resetWorld() {
+    _lastEvaporate = 0;
+    _lastBlur = 0;
+
+    uint32_t w = WorldComponent::width;
+    uint32_t h = WorldComponent::height;
+    for (auto& f : world.get<WorldComponent>()->pheromones)
+        for (int i = 0; i < w * h; i++)
+            f[i] = 0;
+
+    uint8_t* data = _bgImage->getData();
+    for (int i = 0; i < w * h * 4; i += 4) {
+        data[i] = data[i + 1] = data[i + 2] = 0;
+        data[i + 3] = 255;
+    }
+    _bgImage->update();
+}

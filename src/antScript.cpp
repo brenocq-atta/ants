@@ -16,13 +16,12 @@ uint16_t sense(atta::vec2i pos, uint8_t f) {
 
     auto pheromone = world.get<WorldComponent>()->pheromones[f];
 
-    uint16_t sum;
+    uint16_t sum = 0;
     for (int offy = -1; offy <= 1; offy++)
         for (int offx = -1; offx <= 1; offx++) {
             int x = (pos.x + offx + w) % w;
             int y = (pos.y + offy + h) % h;
             sum += pheromone[y * w + x];
-            world.get<WorldComponent>()->pheromones[1][y * w + x] = 10;
         }
 
     return sum;
@@ -37,22 +36,19 @@ void AntScript::update(cmp::Entity entity, float dt) {
     float r = 5.0f;
     uint8_t f = 0;
 
+    // Sense pheromone
     uint16_t s0 = sense(ant->position + atta::vec2(cos(a0), sin(a0)) * r, f);
     uint16_t s1 = sense(ant->position + atta::vec2(cos(a1), sin(a1)) * r, f);
     uint16_t s2 = sense(ant->position + atta::vec2(cos(a2), sin(a2)) * r, f);
-    // s0 += (rand() / float(RAND_MAX)) * 5;
-    // s1 += (rand() / float(RAND_MAX)) * 5;
-    // s2 += (rand() / float(RAND_MAX)) * 5;
-    //  LOG_DEBUG("AntScript", "Ant $0 $1 $2", entity.getCloneId(), s0, s1, s2);
 
-    // if (s1 > s0 && s1 > s2)
-    //     ant->angle += (a1 - a0) * dt;
-    // else if (s2 > s0 && s2 > s1)
-    //     ant->angle += (a2 - a0) * dt;
-    ant->angle = (a0 * s0 + (a0 + (a1 - a0) * dt) * s1 + (a0 + (a2 - a0) * dt) * s2) / (s0 + s1 + s2);
-    ant->angle += ((rand() / float(RAND_MAX)) - 0.5f) * 30 * dt;
-    // ant->angle +=
+    // Change angle
+    if(s0+s1+s2 != 0)
+    {
+        ant->angle = (a0 * s0 + (a0 + (a1 - a0) * dt) * s1 + (a0 + (a2 - a0) * dt) * s2) / (s0 + s1 + s2);
+        ant->angle += ((rand() / float(RAND_MAX)) - 0.5f) * 10 * dt;
+    }
 
+    // Change position
     ant->position.x += (cos(ant->angle)) * dt;
     ant->position.y += (sin(ant->angle)) * dt;
 
