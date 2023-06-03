@@ -1,34 +1,17 @@
 //--------------------------------------------------
 // Ants
-// antScript.cpp
-// Date: 2022-08-20
+// ant.cpp
+// Date: 2023-05-25
 // By Breno Cunha Queiroz
 //--------------------------------------------------
-#include "antScript.h"
+#include "ant.h"
 #include "antComponent.h"
 #include "worldComponent.h"
 
-const cmp::Entity world(0);
-
-uint16_t sense(atta::vec2i pos, uint8_t f) {
-    uint32_t w = WorldComponent::width;
-    uint32_t h = WorldComponent::height;
-
-    auto pheromone = world.get<WorldComponent>()->pheromones[f];
-
-    uint16_t sum = 0;
-    for (int offy = -1; offy <= 1; offy++)
-        for (int offx = -1; offx <= 1; offx++) {
-            int x = (pos.x + offx + w) % w;
-            int y = (pos.y + offy + h) % h;
-            sum += pheromone[y * w + x];
-        }
-
-    return sum;
-}
-
-void AntScript::update(cmp::Entity entity, float dt) {
-    AntComponent* ant = entity.get<AntComponent>();
+ATTA_CPU_GPU void Ant::update() {
+    float dt = 0.015;
+    AntComponent* ant = get<AntComponent>();
+    _world = cmp::Entity(0);
 
     float a0 = ant->angle;
     float a1 = ant->angle + M_PI / 3;
@@ -42,10 +25,9 @@ void AntScript::update(cmp::Entity entity, float dt) {
     uint16_t s2 = sense(ant->position + atta::vec2(cos(a2), sin(a2)) * r, f);
 
     // Change angle
-    if(s0+s1+s2 != 0)
-    {
+    if (s0 + s1 + s2 != 0) {
         ant->angle = (a0 * s0 + (a0 + (a1 - a0) * dt) * s1 + (a0 + (a2 - a0) * dt) * s2) / (s0 + s1 + s2);
-        ant->angle += ((rand() / float(RAND_MAX)) - 0.5f) * 10 * dt;
+        ant->angle += 0.0f; //((rand() / float(RAND_MAX)) - 0.5f) * 10 * dt;
     }
 
     // Change position
@@ -69,4 +51,22 @@ void AntScript::update(cmp::Entity entity, float dt) {
         ant->position.x += w;
     if (ant->position.y < 0.0f)
         ant->position.y += h;
+}
+
+ATTA_CPU_GPU uint16_t Ant::sense(atta::vec2i pos, uint8_t f) {
+    uint32_t w = WorldComponent::width;
+    uint32_t h = WorldComponent::height;
+
+    auto& pheromone = _world.get<WorldComponent>()->pheromones[f];
+
+    uint16_t sum = 0;
+    for (int offy = -1; offy <= 1; offy++)
+        for (int offx = -1; offx <= 1; offx++) {
+            int x = (pos.x + offx + w) % w;
+            int y = (pos.y + offy + h) % h;
+            if (x >= 0 && y >= 0 && x < w && y < h)
+                sum += pheromone[y * w + x];
+        }
+
+    return sum;
 }

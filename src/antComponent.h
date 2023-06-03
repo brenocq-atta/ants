@@ -4,18 +4,21 @@
 // Date: 2022-08-20
 // By Breno Cunha Queiroz
 //--------------------------------------------------
-#ifndef ANT_COMPONENT_H
-#define ANT_COMPONENT_H
-#include <atta/component/interface.h>
+#ifndef ANTS_ANT_COMPONENT_H
+#define ANTS_ANT_COMPONENT_H
+#include <atta/component/components/component.h>
 
-namespace cmp = atta::component;
-
-struct AntComponent final : public cmp::Component {
+struct AntComponent final : public atta::component::Component {
     atta::vec2 position;
     float angle;
 };
-ATTA_REGISTER_COMPONENT(AntComponent);
-template <>
-cmp::ComponentDescription& cmp::TypedComponentRegistry<AntComponent>::getDescription();
 
-#endif // ANT_COMPONENT_H
+#ifndef __NVCC__
+#include <atta/component/registry/typedRegistry.h>
+ATTA_REGISTER_COMPONENT(AntComponent);
+#endif
+
+// template <>
+// cmp::ComponentDescription& cmp::TypedRegistry<AntComponent>::getDescription();
+
+#endif // ANTS_ANT_COMPONENT_H
