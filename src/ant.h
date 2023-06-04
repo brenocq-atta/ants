@@ -14,7 +14,7 @@ class Ant : public atta::script::Controller {
     ATTA_CPU_GPU void update();
 
   private:
-    ATTA_CPU_GPU uint16_t sense(atta::vec2i pos, uint8_t f);
+    ATTA_CPU_GPU uint16_t sense(atta::vec2i pos);
 
     cmp::Entity _world;
 };

@@ -35,19 +35,19 @@ void System::onLoad() {
 void System::onUnload() { LOG_DEBUG("System", "onUnload"); }
 
 void System::onUIRender() {
-    // LOG_DEBUG("System", "onUIRender");
-
     // Get pheromones
     uint32_t w = WorldComponent::width;
     uint32_t h = WorldComponent::height;
+    uint32_t time = world.get<WorldComponent>()->time;
     auto& pheromones = world.get<WorldComponent>()->pheromones;
 
     // Update texture
     uint8_t* data = _bgImage->getData();
     for (int i = 0; i < w * h; i++) {
-        data[i * 4] = pheromones[0][i];
-        data[i * 4 + 1] = pheromones[1][i];
-        data[i * 4 + 2] = pheromones[2][i];
+        uint8_t evaporated = pheromones[i] == 0 ? 255 : (time - pheromones[i]) / WorldComponent::evaporate;
+        data[i * 4] = evaporated >= 255 ? 0 : 255 - evaporated;
+        data[i * 4 + 1] = 0;
+        data[i * 4 + 2] = 0;
     }
     _bgImage->update();
 }

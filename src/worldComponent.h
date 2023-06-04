@@ -9,12 +9,12 @@
 #include <atta/component/components/component.h>
 
 struct WorldComponent final : public atta::component::Component {
-    float evaporate; ///< Seconds between evaporate runs
-    float blur;      ///< Seconds between blur runs
-    static constexpr uint8_t numPheromones = 3;
+    static constexpr uint32_t evaporate = 5; ///< How many steps it takes to evaporate one unit
     static constexpr uint8_t width = 100;
     static constexpr uint8_t height = 100;
-    uint8_t pheromones[numPheromones][width * height]; ///< Three types of pheromone
+    uint32_t time;                       ///< Current time
+    uint8_t antOnTop[width * height];    ///< Three types of pheromone
+    uint32_t pheromones[width * height]; ///< Three types of pheromone
 };
 
 #ifndef __NVCC__
