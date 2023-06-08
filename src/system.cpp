@@ -13,8 +13,6 @@ const cmp::Entity world(0);
 const cmp::Entity antPrototype(1);
 
 void System::onLoad() {
-    LOG_DEBUG("System", "onLoad");
-
     uint32_t w = WorldComponent::width;
     uint32_t h = WorldComponent::height;
 
@@ -32,7 +30,7 @@ void System::onLoad() {
     _bgImage->update();
 }
 
-void System::onUnload() { LOG_DEBUG("System", "onUnload"); }
+void System::onUnload() {}
 
 void System::onUIRender() {
     // Get pheromones
@@ -44,10 +42,12 @@ void System::onUIRender() {
     // Update texture
     uint8_t* data = _bgImage->getData();
     for (int i = 0; i < w * h; i++) {
-        uint8_t evaporated = pheromones[i] == 0 ? 255 : (time - pheromones[i]) / WorldComponent::evaporate;
+        uint32_t evaporated = pheromones[i] == 0 ? 255 : (time - pheromones[i]) / WorldComponent::evaporate;
         data[i * 4] = evaporated >= 255 ? 0 : 255 - evaporated;
         data[i * 4 + 1] = 0;
         data[i * 4 + 2] = 0;
     }
     _bgImage->update();
 }
+
+void System::onAttaLoop() {}

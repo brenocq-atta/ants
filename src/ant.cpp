@@ -11,7 +11,6 @@
 ATTA_CPU_GPU void Ant::update() {
     _world = cmp::Entity(0);
 
-    float dt = 0.015;
     AntComponent* ant = get<AntComponent>();
 
     float a0 = ant->angle;
@@ -26,19 +25,19 @@ ATTA_CPU_GPU void Ant::update() {
 
     // Change angle
     if (s0 + s1 + s2 != 0) {
-        ant->angle = (a0 * s0 + (a0 + (a1 - a0) * dt) * s1 + (a0 + (a2 - a0) * dt) * s2) / (s0 + s1 + s2);
-        ant->angle += 0.0f; //((rand() / float(RAND_MAX)) - 0.5f) * 10 * dt;
+        ant->angle = ant->angle * 0.5f + ((a0 * s0 + a1 * s1 + a2 * s2) / (s0 + s1 + s2)) * 0.5f;
+        ant->angle += atta::random::uniform(-0.01f, 0.01f);
     }
 
-    // Change position
-    ant->position.x += (cos(ant->angle)) * dt;
-    ant->position.y += (sin(ant->angle)) * dt;
-
     // Wrap angle
-    if (ant->angle > M_PI * 2)
+    while (ant->angle > M_PI * 2)
         ant->angle -= M_PI * 2;
-    if (ant->angle < 0)
+    while (ant->angle < 0)
         ant->angle += M_PI * 2;
+
+    // Change position
+    ant->position.x += (cos(ant->angle)) * 0.01;
+    ant->position.y += (sin(ant->angle)) * 0.01;
 
     // Wrap around
     uint32_t w = WorldComponent::width;
@@ -74,7 +73,7 @@ ATTA_CPU_GPU uint16_t Ant::sense(atta::vec2i pos) {
             if (x >= 0 && y >= 0 && x < w && y < h) {
                 uint32_t pheromoneTime = pheromones[y * w + x];
                 // Calculate amount of pheromone given the time difference
-                uint8_t evaporated = pheromoneTime == 0 ? 255 : (time - pheromoneTime) / WorldComponent::evaporate;
+                uint32_t evaporated = pheromoneTime == 0 ? 255 : (time - pheromoneTime) / WorldComponent::evaporate;
                 sum += evaporated >= 255 ? 0 : 255 - evaporated;
             }
         }

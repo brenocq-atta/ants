@@ -16,6 +16,7 @@ class System : public atta::script::System {
     void onLoad() override;
     void onUnload() override;
     void onUIRender() override;
+    void onAttaLoop() override;
 
   private:
     atta::resource::Image* _bgImage;

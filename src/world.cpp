@@ -10,7 +10,8 @@
 #include <atta/component/components/prototype.h>
 
 ATTA_CPU_GPU void World::onStart() {
-    // srand(42); // Repeatable simulations
+    atta::random::seed(314);
+
     _world = cmp::Entity(0);
     _world.get<WorldComponent>()->time = 0;
 
@@ -20,9 +21,8 @@ ATTA_CPU_GPU void World::onStart() {
     // Init ants
     for (cmp::EntityId i = 2; i < 2 + num; i++) {
         AntComponent* a = cmp::Entity(i).get<AntComponent>();
-        float r = (i - 2) / float(num + 1);
-        a->position = atta::vec2(int(r * 154) % 100, int(r * 353) % 100);
-        a->angle = r * M_PI * 2;
+        a->position = atta::vec2(atta::random::uniform(0.0f, 100.0f), atta::random::uniform(0.0f, 100.0f));
+        a->angle = atta::random::uniform(0.0f, 2 * M_PI);
     }
 }
 
