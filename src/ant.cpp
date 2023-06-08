@@ -13,19 +13,17 @@ ATTA_CPU_GPU void Ant::update() {
 
     AntComponent* ant = get<AntComponent>();
 
-    float a0 = ant->angle;
     float a1 = ant->angle + M_PI / 3;
     float a2 = ant->angle - M_PI / 3;
     float r = 5.0f;
 
     // Sense pheromone
-    uint16_t s0 = sense(ant->position + atta::vec2(cos(a0), sin(a0)) * r);
     uint16_t s1 = sense(ant->position + atta::vec2(cos(a1), sin(a1)) * r);
     uint16_t s2 = sense(ant->position + atta::vec2(cos(a2), sin(a2)) * r);
 
     // Change angle
-    if (s0 + s1 + s2 != 0) {
-        ant->angle = ant->angle * 0.5f + ((a0 * s0 + a1 * s1 + a2 * s2) / (s0 + s1 + s2)) * 0.5f;
+    if (s1 + s2 != 0) {
+        ant->angle = ant->angle * 0.5f + ((a1 * s1 + a2 * s2) / (s1 + s2)) * 0.5f;
         ant->angle += atta::random::uniform(-0.01f, 0.01f);
     }
 
