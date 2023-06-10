@@ -10,7 +10,7 @@
 #include <atta/component/components/prototype.h>
 
 ATTA_CPU_GPU void World::onStart() {
-    atta::random::seed(314);
+    atta::random::seed();
 
     _world = cmp::Entity(0);
     _world.get<WorldComponent>()->time = 0;
